@@ -40,28 +40,22 @@ public class TimeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/html");
 
-        // Отримуємо параметр timezone з URL
         String timezoneParam = req.getParameter("timezone");
 
-        // Якщо timezone не передано, спробуємо отримати його з Cookie
         if (timezoneParam == null || timezoneParam.isBlank()) {
             timezoneParam = getTimezoneFromCookie(req);
         }
 
-        // Якщо все ще немає timezone, використовуємо UTC
         if (timezoneParam == null || timezoneParam.isBlank()) {
             timezoneParam = "UTC";
         }
 
-        // Отримуємо час для вказаного часового поясу
         String formattedTime = getTimeForTimeZone(timezoneParam);
 
-        // Якщо часова зона валідна, зберігаємо її в Cookie
         if (!formattedTime.equals("Invalid timezone format")) {
             saveTimezoneInCookie(timezoneParam, resp);
         }
 
-        // Відображаємо час у шаблоні
         Context context = new Context(req.getLocale());
         context.setVariable("time", formattedTime);
 
@@ -69,7 +63,6 @@ public class TimeServlet extends HttpServlet {
         resp.getWriter().close();
     }
 
-    // Метод для отримання часу для конкретного часового поясу
     private String getTimeForTimeZone(String timeZoneParam) {
         try {
             ZoneId zoneId = (timeZoneParam != null && !timeZoneParam.isBlank()) ? ZoneId.of(timeZoneParam.replace(" ", "+")) : ZoneId.of("UTC");
@@ -82,7 +75,6 @@ public class TimeServlet extends HttpServlet {
         }
     }
 
-    // Метод для отримання часового поясу з Cookie
     private String getTimezoneFromCookie(HttpServletRequest req) {
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {
@@ -95,10 +87,9 @@ public class TimeServlet extends HttpServlet {
         return null;
     }
 
-    // Метод для збереження часового поясу в Cookie
     private void saveTimezoneInCookie(String timeZoneParam, HttpServletResponse resp) throws UnsupportedEncodingException {
         Cookie cookie = new Cookie("lastTimezone", URLEncoder.encode(timeZoneParam, "UTF-8"));
-        cookie.setMaxAge(120);  // Cookie зберігається на 1 рік
+        cookie.setMaxAge(120);
         resp.addCookie(cookie);
     }
 }
